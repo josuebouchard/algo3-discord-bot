@@ -8,7 +8,7 @@
     "load-commands": "node ./dist/src/deploy-commands.js",
     "clean": "rm -rf ./dist",
     "python-scripts": "python3 ./scripts/bibliography_scraper.py && python3 -m submodules.next_class_info_scraper && python3 -m submodules.generate_students_list",
-    "build": "npm run clean && npm run prettify && tsc && npm run load-commands",
+    "build": "npm run clean && npm run prettify && tsc",
     "test": "jest",
     "dev": "npm run clean && nodemon -e ts --exec \"npm run build && npm start\"",
     "prettify": "npx prettier --write 'src/**/*.ts'"
