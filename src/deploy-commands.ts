@@ -5,8 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import consola from 'consola';
 
-import dotenv from 'dotenv';
-dotenv.config();
+import config from './config';
 
 const commands: {
     name: string;
@@ -24,18 +23,14 @@ for (const file of commandFiles) {
     commands.push(command.data.toJSON());
 }
 
-const rest = new REST({ version: '9' }).setToken(process.env.TOKEN as string);
+const rest = new REST({ version: '9' }).setToken(config.token);
 
 (async () => {
     try {
         consola.info('Started refreshing application (/) commands.');
 
         await rest.put(
-            // Routes.applicationCommands(process.env.CLIENT_ID as string), // For global commands
-            Routes.applicationGuildCommands(
-                process.env.CLIENT_ID as string,
-                process.env.GUILD_ID as string
-            ),
+            Routes.applicationGuildCommands(config.clientID, config.guildID),
             { body: commands }
         );
 

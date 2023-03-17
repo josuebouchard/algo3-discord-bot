@@ -1,22 +1,21 @@
 export interface Config {
-    clientID: string;
+    // Discord bot connection
     token: string;
-    teacherRoleID: string;
+    clientID: string;
+    guildID: string;
+
+    // Discord server
     studentRoleID: string;
     mitosisVoiceChannelID: string;
     mitosisCategoryID: string;
     studentsQueryChannelID: string;
     teachersQueryChannelID: string;
-    onlyThreadsTextChannelsIDs: string;
-    exercisesRepositoryURL: string;
-    githubWebhookID: string;
+
     papersTextChannelID: string;
-    validationTextChannelID: string;
-    validatedRoleID: string;
     readmeTextChannelID: string;
-    devRoleID: string;
-    devTextChannelID: string;
     generalTextChannelID: string;
-    teachersTextChannelID: string;
     queryLogTextChannelID: string;
+
+    // Miscelaneous
+    githubWebhookID: string;
 }
