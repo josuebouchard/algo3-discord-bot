@@ -3,7 +3,7 @@ import { Routes } from 'discord-api-types/v9';
 import consola from 'consola';
 
 import config from './config';
-import commands from './commands';
+import { commands } from './commands';
 
 const commandsBody = commands.map(command => command.data.toJSON());
 

@@ -1,11 +1,9 @@
-import consola, { Consola } from 'consola';
+import consola from 'consola';
 import {
     Client,
     Intents,
     Collection,
     Channel,
-    VoiceChannel,
-    AnyChannel,
     GuildChannel,
 } from 'discord.js';
 import { Config } from '../interfaces/Config';
@@ -15,22 +13,23 @@ import { Button } from '../interfaces/Button';
 import { QueryQueue } from '../components/models/QueryQueue';
 import { EmbedPage } from '../components/models/EmbedPage';
 import { EmbedPageInterface } from '../interfaces/EmbedPage';
+import { commands } from "../commands"
 import path from 'path';
 import fs from 'fs';
-import cron from 'node-cron';
-import child_process from 'child_process';
-import event from '../../assets/event.json';
+// import cron from 'node-cron';
+// import child_process from 'child_process';
+// import event from '../../assets/event.json';
 
 class Bot extends Client {
-    public logger: Consola = consola;
     public commands: Collection<string, Command> = new Collection();
     public events: Collection<string, Event> = new Collection();
     public buttons: Collection<string, Button> = new Collection();
     public embeds: Collection<string, EmbedPage> = new Collection();
-    public config!: Config;
     public queryQueue: QueryQueue = new QueryQueue();
+    public config;
+    public logger;
 
-    public constructor() {
+    public constructor(config: Config, logger = consola) {
         super({
             intents: [
                 Intents.FLAGS.GUILDS,
@@ -40,25 +39,21 @@ class Bot extends Client {
                 Intents.FLAGS.GUILD_WEBHOOKS,
             ],
         });
+        this.config = config;
+        this.logger = logger;
     }
 
-    public async start(config: Config): Promise<void> {
-        this.config = config;
+    public async start(): Promise<void> {
         await this.loadCommands();
         await this.loadEvents();
         await this.loadButtons();
-        super.login(config.token);
+        this.login(this.config.token);
     }
 
     private async loadCommands() {
         this.logger.info(`Loading commands...`);
 
-        const commandFiles: string[] = fs
-            .readdirSync(path.resolve(__dirname, '../commands'))
-            .filter((file) => file.endsWith('.js'));
-
-        for (const file of commandFiles) {
-            const command: Command = require(`../commands/${file}`);
+        for (const command of commands) {
             this.commands.set(command.data.name, command);
             this.logger.success(`Command ${command.data.name} loaded.`);
         }
@@ -75,11 +70,11 @@ class Bot extends Client {
 
         for (const file of eventFiles) {
             const event = require(`../events/${file}`);
-            if (event.once) {
+            if (event.once)
                 this.once(event.name, (...args) => event.execute(...args));
-            } else {
+            else
                 this.on(event.name, (...args) => event.execute(...args));
-            }
+
             this.logger.success(`Listening to ${event.name} event.`);
         }
 
@@ -118,6 +113,7 @@ class Bot extends Client {
             ) {
                 this.queryQueue.addObserver(embed.data);
             }
+
             if (embed.data.autoSend) {
                 await embed.data.send();
                 this.logger.success(`Embed ${embed.data.name} sent.`);
@@ -128,38 +124,31 @@ class Bot extends Client {
     }
 
     public async removeUnusedClonedChannels() {
-        const unusedClonedChannels = await this.filterUnusedClonedChannels();
-
-        this.logger.info(
-            `Removing ${unusedClonedChannels.size} unused channels...`
-        );
-
-        unusedClonedChannels.forEach(async (channel) => {
-            await channel.delete().catch((err: any) => this.logger.error(err));
-        });
-
-        this.logger.success(`Unused channels removed.`);
-    }
-
-    private async filterUnusedClonedChannels(): Promise<
-        Collection<string, AnyChannel>
-    > {
-        this.logger.info(`Filtering unused channels...`);
-
         const unusedClonedChannels = this.channels.cache.filter(
             (channel) =>
                 channel.isVoice() &&
                 this.isMitosisCategory(channel) &&
                 this.isNotDonor(channel) &&
-                (channel as VoiceChannel).members.size === 0
+                channel.members.size === 0
         );
 
-        this.logger.success(`Unused channels filtered.`);
+        this.logger.info(
+            `Removing ${unusedClonedChannels.size} unused channels...`
+        );
 
-        return unusedClonedChannels;
+        const channelDeletions = await Promise.allSettled(
+            unusedClonedChannels
+                .map((channel) => channel.delete())
+        );
+        channelDeletions.forEach(channelDeletion => {
+            if (channelDeletion.status == "rejected")
+                this.logger.error(channelDeletion.reason);
+        })
+
+        this.logger.success(`Unused channels removed.`);
     }
 
-    private isNotDonor(channel: Channel): boolean {
+    private isNotDonor(channel: Channel) {
         return channel.id !== this.config.mitosisVoiceChannelID;
     }
 
@@ -167,6 +156,8 @@ class Bot extends Client {
         return channel.parentId === this.config.mitosisCategoryID;
     }
 
+    // TODO: reenable when ready
+    /*
     public scheduleMessages() {
         this.logger.info(`Scheduling messages...`);
         let next_class_embed: EmbedPage;
@@ -226,15 +217,17 @@ class Bot extends Client {
             { timezone: 'America/Argentina/Buenos_Aires' }
         );
     }
+    */
 
-    private async updateNextClassData() {
-        child_process.spawn('python3', [
-            './submodules/next_class_info_scraper.py',
-        ]);
-    }
+    // TODO: reenable when ready
+    // private async updateNextClassData() {
+    //     child_process.spawn('python3', [
+    //         './submodules/next_class_info_scraper.py',
+    //     ]);
+    // }
 
     public logHelp(
-        creationDate: Date,
+        _creationDate: Date,
         creator: string,
         helper: string,
         end: string
@@ -242,14 +235,14 @@ class Bot extends Client {
         this.logger.info(
             `Logging help asked by ${helper} helped by Grupo ${creator} (${end})`
         );
-        child_process.spawn('python3', [
-            `./scripts/help_logger.py`,
-            creationDate.toISOString(),
-            creator,
-            end,
-            helper,
-        ]);
-        this.logger.success('Help logged.');
+        // TODO: change this implementation
+        // child_process.spawn('python3', [
+        //     `./scripts/help_logger.py`,
+        //     creationDate.toISOString(),
+        //     creator,
+        //     end,
+        //     helper,
+        // ]);
     }
 
     static dateFromISO(isoDate: string, timeZone: string) {

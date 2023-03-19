@@ -5,12 +5,10 @@ import { Command } from '../interfaces/Command';
 import RequestDiscordAccessCommand from './RequestDiscordAccessCommand';
 // import RequestGroupRoleCommand from './RequestGroupRoleCommand';
 
-const commands: Command[] = [
+export const commands: Command[] = [
     // GradesCommand,
     // EmbedMessageCommand,
     // PapersCommand,
     RequestDiscordAccessCommand,
     // RequestGroupRoleCommand,
 ];
-
-export default commands;
