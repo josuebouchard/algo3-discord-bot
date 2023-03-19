@@ -18,6 +18,7 @@ const config = {
     readmeTextChannelID: env.README_TEXT_CHANNEL_ID!,
     generalTextChannelID: env.GENERAL_TEXT_CHANNEL_ID!,
     queryLogTextChannelID: env.QUERY_LOG_TEXT_CHANNEL_ID!,
+    mongoURL: env.MONGO_URL!,
 } satisfies Config;
 
 export default config;

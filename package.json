@@ -8,7 +8,7 @@
     "load-commands": "node ./dist/src/deploy-commands.js",
     "clean": "rm -rf ./dist",
     "python-scripts": "python3 ./scripts/bibliography_scraper.py && python3 -m submodules.next_class_info_scraper && python3 -m submodules.generate_students_list",
-    "build": "npm run clean && npm run prettify && tsc",
+    "build": "npm run clean && tsc",
     "test": "jest",
     "dev": "npm run clean && nodemon -e ts --exec \"npm run build && npm start\"",
     "prettify": "npx prettier --write 'src/**/*.ts'"
@@ -32,6 +32,7 @@
     "discord.js": "^13.8.0",
     "dotenv": "^10.0.0",
     "fs": "^0.0.1-security",
+    "mongodb": "^5.1.0",
     "node-cron": "^3.0.0",
     "path": "^0.12.7",
     "prettier": "^2.3.2",
