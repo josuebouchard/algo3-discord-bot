@@ -5,7 +5,7 @@ import consola from 'consola';
 import config from './config';
 import { commands } from './commands';
 
-const commandsBody = commands.map(command => command.data.toJSON());
+const commandsBody = commands.map((command) => command.data.toJSON());
 
 const rest = new REST({ version: '9' }).setToken(config.token);
 

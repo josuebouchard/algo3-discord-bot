@@ -1,11 +1,5 @@
 import consola from 'consola';
-import {
-    Client,
-    Intents,
-    Collection,
-    Channel,
-    GuildChannel,
-} from 'discord.js';
+import { Client, Intents, Collection, Channel, GuildChannel } from 'discord.js';
 import { Config } from '../interfaces/Config';
 import { Command } from '../interfaces/Command';
 import { Event } from '../interfaces/Event';
@@ -13,7 +7,7 @@ import { Button } from '../interfaces/Button';
 import { QueryQueue } from '../components/models/QueryQueue';
 import { EmbedPage } from '../components/models/EmbedPage';
 import { EmbedPageInterface } from '../interfaces/EmbedPage';
-import { commands } from "../commands"
+import { commands } from '../commands';
 import path from 'path';
 import fs from 'fs';
 // import cron from 'node-cron';
@@ -72,8 +66,7 @@ class Bot extends Client {
             const event = require(`../events/${file}`);
             if (event.once)
                 this.once(event.name, (...args) => event.execute(...args));
-            else
-                this.on(event.name, (...args) => event.execute(...args));
+            else this.on(event.name, (...args) => event.execute(...args));
 
             this.logger.success(`Listening to ${event.name} event.`);
         }
@@ -137,13 +130,12 @@ class Bot extends Client {
         );
 
         const channelDeletions = await Promise.allSettled(
-            unusedClonedChannels
-                .map((channel) => channel.delete())
+            unusedClonedChannels.map((channel) => channel.delete())
         );
-        channelDeletions.forEach(channelDeletion => {
-            if (channelDeletion.status == "rejected")
+        channelDeletions.forEach((channelDeletion) => {
+            if (channelDeletion.status == 'rejected')
                 this.logger.error(channelDeletion.reason);
-        })
+        });
 
         this.logger.success(`Unused channels removed.`);
     }
