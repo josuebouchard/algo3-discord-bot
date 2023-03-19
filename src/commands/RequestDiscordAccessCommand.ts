@@ -1,30 +1,21 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, GuildMember } from 'discord.js';
 import { Command } from '../interfaces/Command';
-import { emailIsValid, padronIsValid } from '../utils';
-import students from '../../assets/Listado.json';
-
-function studentIsValid(email: string, padron: string): boolean {
-    return (students as any[]).some(
-        (student) => student.includes(email) && student.includes(padron)
-    );
-}
+import { getStudentByEmailAndPadron } from '../dataRepository';
 
 const currentCuatrimestre = '1c2023';
 
 export default {
     execute: async (interaction: CommandInteraction): Promise<void> => {
-        const email = interaction.options.data[0].value as string;
-        const padron = interaction.options.data[1].value as string;
+        const email = interaction.options.getString('email', true);
+        const padron = interaction.options.getNumber('padrón', true);
         const member = interaction.member as GuildMember;
 
         await interaction.deferReply({ ephemeral: true });
 
-        if (
-            !emailIsValid(email) ||
-            !padronIsValid(padron) ||
-            !studentIsValid(email, padron)
-        ) {
+        const studentData = await getStudentByEmailAndPadron(email, padron);
+
+        if (!studentData) {
             await interaction.editReply(
                 'Datos ingresados inválidos (revisá que estén bien escritos y recordá que tenés que utilizar los mismos usaste para llenar el forms). \n*Si llevás varios intentos, consultá con un docente...*'
             );
@@ -58,7 +49,7 @@ export default {
         .addStringOption((option) =>
             option.setName('email').setDescription('email').setRequired(true)
         )
-        .addStringOption((option) =>
+        .addNumberOption((option) =>
             option.setName('padrón').setDescription('padron').setRequired(true)
         ),
 } satisfies Command;

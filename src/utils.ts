@@ -4,12 +4,14 @@ export const emailIsValid = (email: string) => {
     return re.test(String(email).toLowerCase());
 };
 
-export const padronIsValid = (padron: string) => {
+export const padronIsValid = (padron: number) => {
     const minimumPadronLength = 5;
     const maximumPadronLength = 6;
+
+    const stringPadron = padron.toString();
+
     return (
-        padron.length >= minimumPadronLength &&
-        padron.length <= maximumPadronLength &&
-        isFinite(parseInt(padron))
+        stringPadron.length >= minimumPadronLength &&
+        stringPadron.length <= maximumPadronLength
     );
 };

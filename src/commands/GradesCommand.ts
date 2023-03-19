@@ -5,8 +5,8 @@ import { emailIsValid, padronIsValid } from '../utils';
 
 export default {
     execute: async (interaction: CommandInteraction) => {
-        const email = interaction.options.data[0].value as string;
-        const padron = interaction.options.data[1].value as string;
+        const email = interaction.options.getString('email', true);
+        const padron = interaction.options.getNumber('padrón', true);
 
         await interaction.deferReply({ ephemeral: true });
 

@@ -18,4 +18,7 @@ export interface Config {
 
     // Miscelaneous
     githubWebhookID: string;
+
+    // Mongodb connection
+    mongoURL: string;
 }

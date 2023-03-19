@@ -1,45 +1,29 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, GuildMember } from 'discord.js';
 import { Command } from '../interfaces/Command';
-import * as students from '../../assets/Listado.json';
 import { emailIsValid, padronIsValid } from '../utils';
-
-function getStudentInfo(email: string, padron: string) {
-    for (const index in students) {
-        if (
-            students[index].includes(email) &&
-            students[index].includes(padron)
-        ) {
-            return students[index];
-        }
-    }
-    return [];
-}
+import { getStudentByEmailAndPadron } from '../dataRepository';
 
 export default {
     execute: async (interaction: CommandInteraction) => {
-        const email = interaction.options.data[0].value as string;
-        const padron = interaction.options.data[1].value as string;
-        const member = interaction.member as GuildMember;
+        const email = interaction.options.getString('email', true);
+        const padron = interaction.options.getNumber('padrón', true);
+        const guildMember = interaction.member as GuildMember;
 
         await interaction.deferReply({ ephemeral: true });
 
-        const studentInfo = getStudentInfo(email, padron);
+        const studentInfo = await getStudentByEmailAndPadron(email, padron);
 
-        if (
-            !emailIsValid(email) ||
-            !padronIsValid(padron) ||
-            studentInfo.length === 0
-        ) {
+        if (!emailIsValid(email) || !padronIsValid(padron)) {
             await interaction.editReply(
                 'Datos ingresados inválidos (revisá que estén bien escritos y recordá que tenés que utilizar los mismos usaste para llenar el forms). \n*Si llevás varios intentos, consultá con un docente...*'
             );
             return;
         }
 
-        const groupNumber = studentInfo[3];
+        const groupNumber = studentInfo?.grupo;
 
-        if (groupNumber === '#N/A') {
+        if (!groupNumber) {
             await interaction.editReply(
                 'Todavía no tenes grupo. \n*Si esto es un error, y en realidad si tenes grupo, consultá con un docente...*'
             );
@@ -49,7 +33,9 @@ export default {
         const memberGroupRoleName = `Grupo ${groupNumber}`;
 
         if (
-            member.roles.cache.find((role) => role.name === memberGroupRoleName)
+            guildMember.roles.cache.find(
+                (role) => role.name === memberGroupRoleName
+            )
         ) {
             await interaction.editReply(
                 'Ya tenías el rol de grupo asignado!\n*Si es el equivocado, ponete en contacto con un docente para que vea tu situación.*'
@@ -57,19 +43,17 @@ export default {
             return;
         }
 
-        let groupRole = member.guild.roles.cache.find(
+        let groupRole = guildMember.guild.roles.cache.find(
             (role) => role.name === memberGroupRoleName
         )!;
-
-        if (groupRole) {
-            await member.roles.add(groupRole);
-        } else {
-            groupRole = await member.guild.roles.create({
+        if (!groupRole) {
+            groupRole = await guildMember.guild.roles.create({
                 name: memberGroupRoleName,
                 color: 'RANDOM',
             });
-            await member.roles.add(groupRole);
         }
+        await guildMember.roles.add(groupRole);
+
         await interaction.editReply(
             'Validación exitosa!, ya deberías tener el rol de tu grupo. \n*Si no es el caso contrario contactate con un docente.*'
         );
