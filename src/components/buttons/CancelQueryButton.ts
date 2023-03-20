@@ -26,7 +26,7 @@ export const execute = async (interaction: ButtonInteraction) => {
         ephemeral: true,
     });
 
-    client.logHelp(
+    await client.logHelp(
         interaction.createdAt,
         group ? group.name.split(' ')[1] : member.displayName,
         '-',

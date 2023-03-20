@@ -8,6 +8,7 @@ import { QueryQueue } from '../components/models/QueryQueue';
 import { EmbedPage } from '../components/models/EmbedPage';
 import { EmbedPageInterface } from '../interfaces/EmbedPage';
 import { loadDynamicFiles } from '../utils';
+import { logsCollection } from '../dataRepository';
 
 class Bot extends Client {
     public commands: Collection<string, Command> = new Collection();
@@ -202,23 +203,22 @@ class Bot extends Client {
     //     ]);
     // }
 
-    public logHelp(
-        _creationDate: Date,
-        creator: string,
+    public async logHelp(
+        creationDate: Date,
+        helped: string,
         helper: string,
-        end: string
+        result: string
     ) {
         this.logger.info(
-            `Logging help asked by ${helper} helped by Grupo ${creator} (${end})`
+            `Logging help asked by ${helper} helped by Grupo ${helped} (${result})`
         );
-        // TODO: change this implementation
-        // child_process.spawn('python3', [
-        //     `./scripts/help_logger.py`,
-        //     creationDate.toISOString(),
-        //     creator,
-        //     end,
-        //     helper,
-        // ]);
+        await logsCollection.insertOne({
+            type: 'help',
+            createdAt: creationDate.toISOString(),
+            result,
+            helper,
+            helped
+        });
     }
 
     static dateFromISO(isoDate: string, timeZone: string) {

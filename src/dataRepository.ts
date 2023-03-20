@@ -12,7 +12,9 @@ export type Student = {
 };
 
 // Collections
-const studentsCollection = db.collection<Student>('students');
+export const studentsCollection = db.collection<Student>('students');
+export const logsCollection = db.collection('logs');
+
 
 export const getStudentByPadron = (padron: number) =>
     studentsCollection.findOne({ padron }, { projection: { _id: false } });

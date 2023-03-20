@@ -28,7 +28,7 @@ export const execute = async (interaction: ButtonInteraction) => {
         role.name.startsWith('Grupo')
     );
 
-    client.logHelp(
+    await client.logHelp(
         interaction.createdAt,
         group ? group.name.split(' ')[1] : consultee.displayName,
         consultor.displayName,
