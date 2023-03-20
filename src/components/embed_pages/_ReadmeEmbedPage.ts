@@ -3,7 +3,8 @@ import { client } from '../../index';
 
 export const data = new EmbedPage(
     client,
-    true,
+    // Change this to true to reenable,
+    false,
     true,
     false,
     'readme',
