@@ -3,9 +3,11 @@ import { Routes } from 'discord-api-types/v9';
 import consola from 'consola';
 
 import config from './config';
-import { commands } from './commands';
+import { loadDynamicFiles } from './utils';
+import { Command } from './interfaces/Command';
 
-const commandsBody = commands.map((command) => command.data.toJSON());
+const commandsBody = loadDynamicFiles<Command>('./commands', {isExportDefault: true})
+    .map((command) => command.data.toJSON());
 
 const rest = new REST({ version: '9' }).setToken(config.token);
 

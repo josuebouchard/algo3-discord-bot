@@ -7,12 +7,7 @@ import { Button } from '../interfaces/Button';
 import { QueryQueue } from '../components/models/QueryQueue';
 import { EmbedPage } from '../components/models/EmbedPage';
 import { EmbedPageInterface } from '../interfaces/EmbedPage';
-import { commands } from '../commands';
-import path from 'path';
-import fs from 'fs';
-// import cron from 'node-cron';
-// import child_process from 'child_process';
-// import event from '../../assets/event.json';
+import { loadDynamicFiles } from '../utils';
 
 class Bot extends Client {
     public commands: Collection<string, Command> = new Collection();
@@ -47,10 +42,11 @@ class Bot extends Client {
     private async loadCommands() {
         this.logger.info(`Loading commands...`);
 
-        for (const command of commands) {
-            this.commands.set(command.data.name, command);
-            this.logger.success(`Command ${command.data.name} loaded.`);
-        }
+        loadDynamicFiles<Command>('./commands', { isExportDefault: true })
+            .forEach(command => {
+                this.commands.set(command.data.name, command);
+                this.logger.success(`Command ${command.data.name} loaded.`);
+            })
 
         this.logger.success(`Commands loaded.`);
     }
@@ -58,18 +54,18 @@ class Bot extends Client {
     private async loadEvents() {
         this.logger.info(`Loading events...`);
 
-        const eventFiles = fs
-            .readdirSync(path.resolve(__dirname, '../events'))
-            .filter((file) => file.endsWith('.js'));
+        // const eventFiles = fs
+        //     .readdirSync(path.resolve(__dirname, '../events'))
+        //     .filter((file) => file.endsWith('.js') && !file.startsWith('_'));
 
-        for (const file of eventFiles) {
-            const event = require(`../events/${file}`);
-            if (event.once)
-                this.once(event.name, (...args) => event.execute(...args));
-            else this.on(event.name, (...args) => event.execute(...args));
+        loadDynamicFiles<Event>('./events')
+            .forEach(event => {
+                if (event.once)
+                    this.once(event.name, (...args) => event.execute(...args));
+                else this.on(event.name, (...args) => event.execute(...args));
 
-            this.logger.success(`Listening to ${event.name} event.`);
-        }
+                this.logger.success(`Listening to ${event.name} event.`);
+            })
 
         this.logger.success(`Events loaded.`);
     }
@@ -77,15 +73,15 @@ class Bot extends Client {
     private async loadButtons() {
         this.logger.info(`Loading buttons...`);
 
-        const buttonFiles: string[] = fs
-            .readdirSync(path.resolve(__dirname, '../components/buttons'))
-            .filter((file) => file.endsWith('.js'));
+        // const buttonFiles: string[] = fs
+        //     .readdirSync(path.resolve(__dirname, '../components/buttons'))
+        //     .filter((file) => file.endsWith('.js') && !file.startsWith('_'));
 
-        for (const file of buttonFiles) {
-            const button: Button = require(`../components/buttons/${file}`);
-            this.buttons.set(button.data.customId!, button);
-            this.logger.success(`Button ${button.data.customId} loaded.`);
-        }
+        loadDynamicFiles<Button>("./components/buttons")
+            .forEach(button => {
+                this.buttons.set(button.data.customId!, button);
+                this.logger.success(`Button ${button.data.customId} loaded.`);
+            });
 
         this.logger.success(`Buttons loaded.`);
     }
@@ -93,25 +89,25 @@ class Bot extends Client {
     public async loadEmbeds() {
         this.logger.info(`Loading embeds...`);
 
-        const embedFiles: string[] = fs
-            .readdirSync(path.resolve(__dirname, '../components/embed_pages'))
-            .filter((file) => file.endsWith('.js'));
+        // const embedFiles: string[] = fs
+        //     .readdirSync(path.resolve(__dirname, '../components/embed_pages'))
+        //     .filter((file) => file.endsWith('.js') && !file.startsWith('_'));
 
-        for (const file of embedFiles) {
-            const embed: EmbedPageInterface = require(`../components/embed_pages/${file}`);
-            this.embeds.set(embed.data.name, embed.data);
-            if (
-                embed.data.name === 'students' ||
-                embed.data.name === 'teachers'
-            ) {
-                this.queryQueue.addObserver(embed.data);
-            }
+        loadDynamicFiles<EmbedPageInterface>("./components/embed_pages")
+            .forEach(async (embedPage) => {
+                this.embeds.set(embedPage.data.name, embedPage.data);
+                if (
+                    embedPage.data.name === 'students' ||
+                    embedPage.data.name === 'teachers'
+                ) {
+                    this.queryQueue.addObserver(embedPage.data);
+                }
 
-            if (embed.data.autoSend) {
-                await embed.data.send();
-                this.logger.success(`Embed ${embed.data.name} sent.`);
-            }
-        }
+                if (embedPage.data.autoSend) {
+                    await embedPage.data.send();
+                    this.logger.success(`Embed ${embedPage.data.name} sent.`);
+                }
+            });
 
         this.logger.success(`Sent ${this.embeds.size} embeds.`);
     }
