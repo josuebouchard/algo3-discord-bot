@@ -42,11 +42,12 @@ class Bot extends Client {
     private async loadCommands() {
         this.logger.info(`Loading commands...`);
 
-        loadDynamicFiles<Command>('./commands', { isExportDefault: true })
-            .forEach(command => {
-                this.commands.set(command.data.name, command);
-                this.logger.success(`Command ${command.data.name} loaded.`);
-            })
+        loadDynamicFiles<Command>('./commands', {
+            isExportDefault: true,
+        }).forEach((command) => {
+            this.commands.set(command.data.name, command);
+            this.logger.success(`Command ${command.data.name} loaded.`);
+        });
 
         this.logger.success(`Commands loaded.`);
     }
@@ -54,18 +55,13 @@ class Bot extends Client {
     private async loadEvents() {
         this.logger.info(`Loading events...`);
 
-        // const eventFiles = fs
-        //     .readdirSync(path.resolve(__dirname, '../events'))
-        //     .filter((file) => file.endsWith('.js') && !file.startsWith('_'));
+        loadDynamicFiles<Event>('./events').forEach((event) => {
+            if (event.once)
+                this.once(event.name, (...args) => event.execute(...args));
+            else this.on(event.name, (...args) => event.execute(...args));
 
-        loadDynamicFiles<Event>('./events')
-            .forEach(event => {
-                if (event.once)
-                    this.once(event.name, (...args) => event.execute(...args));
-                else this.on(event.name, (...args) => event.execute(...args));
-
-                this.logger.success(`Listening to ${event.name} event.`);
-            })
+            this.logger.success(`Listening to ${event.name} event.`);
+        });
 
         this.logger.success(`Events loaded.`);
     }
@@ -73,15 +69,10 @@ class Bot extends Client {
     private async loadButtons() {
         this.logger.info(`Loading buttons...`);
 
-        // const buttonFiles: string[] = fs
-        //     .readdirSync(path.resolve(__dirname, '../components/buttons'))
-        //     .filter((file) => file.endsWith('.js') && !file.startsWith('_'));
-
-        loadDynamicFiles<Button>("./components/buttons")
-            .forEach(button => {
-                this.buttons.set(button.data.customId!, button);
-                this.logger.success(`Button ${button.data.customId} loaded.`);
-            });
+        loadDynamicFiles<Button>('./components/buttons').forEach((button) => {
+            this.buttons.set(button.data.customId!, button);
+            this.logger.success(`Button ${button.data.customId} loaded.`);
+        });
 
         this.logger.success(`Buttons loaded.`);
     }
@@ -89,25 +80,22 @@ class Bot extends Client {
     public async loadEmbeds() {
         this.logger.info(`Loading embeds...`);
 
-        // const embedFiles: string[] = fs
-        //     .readdirSync(path.resolve(__dirname, '../components/embed_pages'))
-        //     .filter((file) => file.endsWith('.js') && !file.startsWith('_'));
+        loadDynamicFiles<EmbedPageInterface>(
+            './components/embed_pages'
+        ).forEach(async (embedPage) => {
+            this.embeds.set(embedPage.data.name, embedPage.data);
+            if (
+                embedPage.data.name === 'students' ||
+                embedPage.data.name === 'teachers'
+            ) {
+                this.queryQueue.addObserver(embedPage.data);
+            }
 
-        loadDynamicFiles<EmbedPageInterface>("./components/embed_pages")
-            .forEach(async (embedPage) => {
-                this.embeds.set(embedPage.data.name, embedPage.data);
-                if (
-                    embedPage.data.name === 'students' ||
-                    embedPage.data.name === 'teachers'
-                ) {
-                    this.queryQueue.addObserver(embedPage.data);
-                }
-
-                if (embedPage.data.autoSend) {
-                    await embedPage.data.send();
-                    this.logger.success(`Embed ${embedPage.data.name} sent.`);
-                }
-            });
+            if (embedPage.data.autoSend) {
+                await embedPage.data.send();
+                this.logger.success(`Embed ${embedPage.data.name} sent.`);
+            }
+        });
 
         this.logger.success(`Sent ${this.embeds.size} embeds.`);
     }

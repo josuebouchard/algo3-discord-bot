@@ -1,9 +1,4 @@
-import {
-    ButtonInteraction,
-    GuildMember,
-    MessageButton,
-    // TextChannel,
-} from 'discord.js';
+import { ButtonInteraction, GuildMember, MessageButton } from 'discord.js';
 import { client } from '../../index';
 
 export const execute = async (interaction: ButtonInteraction) => {
