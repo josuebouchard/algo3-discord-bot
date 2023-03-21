@@ -30,9 +30,9 @@ export const execute = async (interaction: ButtonInteraction) => {
 
     await client.logHelp(
         interaction.createdAt,
-        group ? group.name.split(' ')[1] : consultee.displayName,
+        group ? group.name : consultee.displayName,
         consultor.displayName,
-        'Brindada'
+        'brindada'
     );
 
     if (group) {

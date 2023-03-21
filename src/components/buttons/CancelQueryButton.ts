@@ -28,9 +28,9 @@ export const execute = async (interaction: ButtonInteraction) => {
 
     await client.logHelp(
         interaction.createdAt,
-        group ? group.name.split(' ')[1] : member.displayName,
+        group ? group.name : member.displayName,
         '-',
-        'Desestimada'
+        'desestimada'
     );
 
     const queryLogTextChannel = interaction.guild!.channels.cache.find(

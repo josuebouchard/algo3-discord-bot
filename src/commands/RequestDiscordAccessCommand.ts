@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, GuildMember } from 'discord.js';
 import { Command } from '../interfaces/Command';
-import { getStudentByEmailAndPadron } from '../dataRepository';
+import { getStudentByEmailAndPadron, logsCollection } from '../dataRepository';
 
 const currentCuatrimestre = '1c2023';
 
@@ -36,6 +36,13 @@ export default {
         }
 
         await member.roles.add(studentRole);
+        await logsCollection.insertOne({
+            type: 'request_term_role',
+            createdAt: interaction.createdAt.toISOString(),
+            issuerDiscordName: member.user.username,
+            issuerDiscordId: member.user.id,
+            padron: studentData.padron,
+        });
 
         await interaction.editReply(
             'Validación exitosa!, ya deberías poder ver más canales. \n*Si no es el caso contrario contactate con un docente.*'

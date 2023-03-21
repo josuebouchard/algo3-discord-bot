@@ -207,17 +207,17 @@ class Bot extends Client {
         creationDate: Date,
         helped: string,
         helper: string,
-        result: string
+        result: 'brindada' | 'desestimada'
     ) {
         this.logger.info(
             `Logging help asked by ${helper} helped by Grupo ${helped} (${result})`
         );
         await logsCollection.insertOne({
-            type: 'help',
+            type: 'help_result',
             createdAt: creationDate.toISOString(),
             result,
             helper,
-            helped
+            helped,
         });
     }
 
